@@ -53,7 +53,7 @@ button {
     border-radius: 8px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    cursor: pointer;
+    cursor: grab;
     transition: all 0.3s;
 }
 
@@ -202,4 +202,31 @@ button {
     background: #34495e;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Drag and Drop Styles */
+.image-card.dragging {
+    opacity: 0.6;
+    transform: scale(0.95);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    cursor: grabbing;
+}
+
+.coordinates-display {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(44, 62, 80, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 14px;
+    z-index: 1001;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.coordinates-display.visible {
+    display: block;
 }

@@ -12,11 +12,16 @@ export class Gallery {
     this.closePreview = this.closePreview.bind(this);
     this.navigateImage = this.navigateImage.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleDragStart = this.handleDragStart.bind(this);
+    this.handleDragOver = this.handleDragOver.bind(this);
+    this.handleDragEnd = this.handleDragEnd.bind(this);
+    this.handleDrop = this.handleDrop.bind(this);
 
     this.currentChunk = 0;
     this.itemsPerChunk = 9;
     this.activeCard = null;
     this.currentImageIndex = -1;
+    this.isDragging = false;
 
     this.init();
   }
@@ -25,6 +30,107 @@ export class Gallery {
     this.setupIntersectionObserver();
     this.loadImages();
     window.addEventListener("scroll", this.handleScroll);
+    this.createCoordinatesDisplay();
+    this.setupDropZone();
+  }
+
+  createCoordinatesDisplay() {
+    this.coordinatesDisplay = document.createElement("div");
+    this.coordinatesDisplay.className = "coordinates-display";
+    document.body.appendChild(this.coordinatesDisplay);
+  }
+
+  setupDropZone() {
+    const previewSection = document.querySelector(".preview-section");
+    previewSection.addEventListener("dragover", this.handleDragOver);
+    previewSection.addEventListener("drop", this.handleDrop);
+  }
+
+  updateCoordinatesDisplay(x, y) {
+    this.coordinatesDisplay.textContent = `X: ${x}, Y: ${y}`;
+    this.coordinatesDisplay.classList.add("visible");
+  }
+
+  hideCoordinatesDisplay() {
+    this.coordinatesDisplay.classList.remove("visible");
+  }
+
+  handleDragStart(e, imageCard, image) {
+    this.isDragging = true;
+    this.draggedCard = imageCard;
+    this.draggedImage = image;
+
+    // Set drag data
+    e.dataTransfer.setData("text/plain", image.id);
+    e.dataTransfer.effectAllowed = "move";
+
+    imageCard.classList.add("dragging");
+
+    // Start tracking mouse coordinates
+    document.addEventListener("dragover", this.trackMousePosition.bind(this));
+  }
+
+  /**
+   * Tracks mouse position during drag
+   */
+  trackMousePosition(e) {
+    if (this.isDragging) {
+      this.updateCoordinatesDisplay(e.clientX, e.clientY);
+    }
+  }
+
+  /**
+   * Handles drag over event on drop zone
+   */
+  handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }
+
+  /**
+   * Handles drop event
+   */
+  handleDrop(e) {
+    e.preventDefault();
+
+    const previewSection = document.querySelector(".preview-section");
+    previewSection.classList.remove("drop-zone");
+
+    if (this.draggedCard && this.draggedImage) {
+      // Card was dropped in preview area - activate it
+      this.setActiveCard(this.draggedCard);
+      this.showPreview(this.draggedImage);
+    }
+
+    this.cleanupDrag();
+  }
+
+  /**
+   * Handles drag end event
+   */
+  handleDragEnd(e) {
+    const previewSection = document.querySelector(".preview-section");
+    previewSection.classList.remove("drop-zone");
+
+    this.cleanupDrag();
+  }
+
+  /**
+   * Cleans up after drag operation
+   */
+  cleanupDrag() {
+    this.isDragging = false;
+    this.hideCoordinatesDisplay();
+
+    // Remove dragging class
+    if (this.draggedCard) {
+      this.draggedCard.classList.remove("dragging");
+    }
+
+    this.draggedCard = null;
+    this.draggedImage = null;
+
+    document.removeEventListener("dragover", this.trackMousePosition);
   }
 
   /**
@@ -79,8 +185,8 @@ export class Gallery {
     const scrollPosition = window.pageYOffset;
     const screenHeight = window.innerHeight;
 
-    // Show button when scrolled beyond 150px from bottom
-    const shouldShowButton = scrollPosition > screenHeight * 0.5;
+    const shouldShowButton =
+      this.hasLoadedAllImages() && scrollPosition > screenHeight;
 
     if (shouldShowButton) {
       this.scrollToTopBtn.classList.add("visible");
@@ -101,6 +207,7 @@ export class Gallery {
     const imageCard = document.createElement("div");
     imageCard.className = "image-card";
     imageCard.setAttribute("data-image-id", image.id);
+    imageCard.setAttribute("draggable", "true");
     imageCard.innerHTML = `
       <img src="${image.url}" alt="${image.title}" loading="lazy">
       <p>${image.title}</p>
@@ -110,6 +217,11 @@ export class Gallery {
       this.setActiveCard(imageCard);
       this.showPreview(image);
     });
+
+    imageCard.addEventListener("dragstart", (e) =>
+      this.handleDragStart(e, imageCard, image)
+    );
+    imageCard.addEventListener("dragend", this.handleDragEnd);
 
     this.galleryContainer.append(imageCard);
   }
