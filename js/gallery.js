@@ -12,6 +12,7 @@ export class Gallery {
     this.areAllImagesLoaded = false;
     this.handleScroll = this.handleScroll.bind(this);
     this.scrollToTop = this.scrollToTop.bind(this);
+    this.closePreview = this.closePreview.bind(this);
     this.init();
   }
 
@@ -64,7 +65,7 @@ export class Gallery {
   createImageCard(image) {
     const imageCard = document.createElement("div");
     imageCard.className = "image-card";
-    imageCard.innerHTML = `<img src="${image.url}" alt="image" loading="lazy"><p>${image.title}</p>`;
+    imageCard.innerHTML = `<img id="${image.id}" src="${image.url}" alt="image" loading="lazy"><p>${image.title}</p>`;
     this.galleryContainer.append(imageCard);
 
     imageCard.addEventListener("click", () => {
@@ -84,8 +85,20 @@ export class Gallery {
 
   showPreview(image) {
     const previewContainer = document.querySelector(".preview-container");
-    previewContainer.innerHTML = `<img src="${image.url}" alt="image"><h2>${image.title}</h2>
-`;
+    const closeButton = document.createElement("button");
+    closeButton.className = "close-btn";
+    closeButton.textContent = "╳";
+    previewContainer.innerHTML = `<img id="${image.id}" src="${image.url}" alt="image" loading="lazy"><h2>${image.title}</h2>`;
+    previewContainer.append(closeButton);
+    closeButton.addEventListener("click", this.closePreview);
+  }
+
+  closePreview() {
+    this.activeCard.classList.remove("active");
+    this.activeCard = null;
+    const previewContainer = document.querySelector(".preview-container");
+    previewContainer.innerHTML = `<p>Choose image...</p>`;
+    console.log(this.activeCard);
   }
 
   setupIntersectionObserver() {
