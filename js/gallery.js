@@ -11,6 +11,7 @@ export class Gallery {
     this.handleScroll = this.handleScroll.bind(this);
     this.closePreview = this.closePreview.bind(this);
     this.navigateImage = this.navigateImage.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
 
     this.currentChunk = 0;
     this.itemsPerChunk = 9;
@@ -162,6 +163,7 @@ export class Gallery {
       .addEventListener("click", () => this.navigateImage("next"));
 
     this.updateNavigationButtons();
+    document.addEventListener("keydown", this.handleKeyPress);
   }
 
   closePreview() {
@@ -173,6 +175,8 @@ export class Gallery {
     const previewContainer = document.querySelector(".preview-container");
     previewContainer.innerHTML = `<p>Choose image...</p>`;
     this.currentImageIndex = -1;
+
+    document.removeEventListener("keydown", this.handleKeyPress);
   }
 
   /**
@@ -235,6 +239,23 @@ export class Gallery {
     if (previousArrow && nextArrow) {
       previousArrow.disabled = this.currentImageIndex <= 0;
       nextArrow.disabled = this.currentImageIndex >= images.length - 1;
+    }
+  }
+
+  handleKeyPress(event) {
+    // Works only when preview section is open
+    if (this.currentImageIndex === -1) return;
+
+    switch (event.key) {
+      case "ArrowLeft":
+        this.navigateImage("prev");
+        break;
+      case "ArrowRight":
+        this.navigateImage("next");
+        break;
+      case "Escape":
+        this.closePreview();
+        break;
     }
   }
 }
