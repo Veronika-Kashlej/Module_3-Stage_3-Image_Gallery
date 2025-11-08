@@ -4,15 +4,21 @@ export class Gallery {
   constructor() {
     this.galleryContainer = document.querySelector(".gallery-container");
     this.loadingIndicator = document.getElementById("loading-indicator");
+    this.scrollToTopBtn = document.querySelector(".scroll-to-top-btn");
+    this.scrollToTopBtn.addEventListener("click", this.scrollToTop);
     this.currentChunk = 0;
     this.itemsPerChunk = 9;
     this.activeCard = null;
+    this.areAllImagesLoaded = false;
+    this.handleScroll = this.handleScroll.bind(this);
+    this.scrollToTop = this.scrollToTop.bind(this);
     this.init();
   }
 
   init() {
     this.setupIntersectionObserver();
     this.loadImages();
+    window.addEventListener("scroll", this.handleScroll);
   }
 
   loadImages() {
@@ -28,7 +34,31 @@ export class Gallery {
 
     if (endIndex >= images.length) {
       this.loadingIndicator.style.display = "none";
+      this.areAllImagesLoaded = true;
     }
+  }
+
+  handleScroll() {
+    const documentHeight = document.documentElement.scrollHeight;
+    const screenHeight = document.documentElement.clientHeight;
+
+    if (
+      pageYOffset >= documentHeight - screenHeight - 150 &&
+      this.areAllImagesLoaded
+    ) {
+      this.scrollToTopBtn.classList.add("visible");
+    } else {
+      this.scrollToTopBtn.classList.remove("visible");
+    }
+  }
+
+  scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
+    this.scrollToTopBtn.classList.remove("visible");
   }
 
   createImageCard(image) {
