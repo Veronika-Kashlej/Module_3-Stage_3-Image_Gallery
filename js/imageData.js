@@ -1,5 +1,10 @@
 export const images = [
   {
+    id: 0,
+    title: "Book",
+    url: "./assets/images/book.jpg",
+  },
+  {
     id: 1,
     title: "Cake",
     url: "./assets/images/cake.jpg",
@@ -168,10 +173,5 @@ export const images = [
     id: 34,
     title: "Wedding",
     url: "./assets/images/wedding.jpg",
-  },
-  {
-    id: 35,
-    title: "Book",
-    url: "./assets/images/book.jpg",
   },
 ];
