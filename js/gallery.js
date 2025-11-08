@@ -6,6 +6,7 @@ export class Gallery {
     this.loadingIndicator = document.getElementById("loading-indicator");
     this.currentChunk = 0;
     this.itemsPerChunk = 9;
+    this.activeCard = null;
     this.init();
   }
 
@@ -35,12 +36,31 @@ export class Gallery {
     imageCard.className = "image-card";
     imageCard.innerHTML = `<img src="${image.url}" alt="image" loading="lazy"><p>${image.title}</p>`;
     this.galleryContainer.append(imageCard);
+
+    imageCard.addEventListener("click", () => {
+      this.setActiveCard(imageCard);
+      this.showPreview(image);
+    });
+  }
+
+  setActiveCard(image) {
+    if (this.activeCard) {
+      this.activeCard.classList.remove("active");
+    }
+
+    image.classList.add("active");
+    this.activeCard = image;
+  }
+
+  showPreview(image) {
+    const previewContainer = document.querySelector(".preview-container");
+    previewContainer.innerHTML = `<img src="${image.url}" alt="image"><h2>${image.title}</h2>
+`;
   }
 
   setupIntersectionObserver() {
     const observer = new IntersectionObserver(
       (entries) => {
-        console.log(entries);
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             this.loadImages();
