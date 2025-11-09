@@ -8,6 +8,9 @@ export class Gallery {
     this.addImageForm = document.querySelector("form");
     this.imageNameInput = document.querySelector("input[type='text']");
     this.imageFileInput = document.querySelector("input[type='file']");
+    this.gallerySection = document.querySelector(".gallery-section");
+    this.previewSection = document.querySelector(".preview-section");
+    this.resizer = document.querySelector(".resizer");
 
     // Bind event handlers
     this.scrollToTopBtn.addEventListener("click", this.scrollToTop);
@@ -23,12 +26,16 @@ export class Gallery {
     this.handleDragOver = this.handleDragOver.bind(this);
     this.handleDragEnd = this.handleDragEnd.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
+    this.handleResizerMouseDown = this.handleResizerMouseDown.bind(this);
+    this.handleResizerMouseMove = this.handleResizerMouseMove.bind(this);
+    this.handleResizerMouseUp = this.handleResizerMouseUp.bind(this);
 
     this.currentChunk = 0;
     this.itemsPerChunk = 9;
     this.activeCard = null;
     this.currentImageIndex = -1;
     this.isDragging = false;
+    this.isResizing = false;
 
     this.init();
   }
@@ -39,6 +46,49 @@ export class Gallery {
     window.addEventListener("scroll", this.handleScroll);
     this.createCoordinatesDisplay();
     this.setupDropZone();
+    this.resizer.addEventListener("mousedown", this.handleResizerMouseDown);
+  }
+
+  handleResizerMouseDown(e) {
+    e.preventDefault();
+    this.isResizing = true;
+
+    // Store initial positions and sizes
+    this.startX = e.clientX;
+    this.startGalleryWidth = this.gallerySection.getBoundingClientRect().width;
+    this.startPreviewWidth = this.previewSection.getBoundingClientRect().width;
+
+    // Add event listeners for mouse move and up
+    document.addEventListener("mousemove", this.handleResizerMouseMove);
+    document.addEventListener("mouseup", this.handleResizerMouseUp);
+  }
+
+  handleResizerMouseMove(e) {
+    if (!this.isResizing) return;
+
+    const deltaX = e.clientX - this.startX;
+    const mainElement = document.querySelector("main");
+    const totalWidth = mainElement.getBoundingClientRect().width;
+
+    // Calculate new widths as percentages
+    const newGalleryWidth =
+      ((this.startGalleryWidth + deltaX) / totalWidth) * 100;
+    const newPreviewWidth =
+      ((this.startPreviewWidth - deltaX) / totalWidth) * 100;
+
+    // Apply constraints (min 30% for gallery, min 20% for preview)
+    if (newGalleryWidth >= 30 && newPreviewWidth >= 20) {
+      this.gallerySection.style.flexBasis = `${newGalleryWidth}%`;
+      this.previewSection.style.flexBasis = `${newPreviewWidth}%`;
+    }
+  }
+
+  handleResizerMouseUp() {
+    this.isResizing = false;
+
+    // Remove event listeners
+    document.removeEventListener("mousemove", this.handleResizerMouseMove);
+    document.removeEventListener("mouseup", this.handleResizerMouseUp);
   }
 
   handleFormSubmit(e) {

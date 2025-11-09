@@ -18,7 +18,6 @@ body {
 main {
     display: flex;
     height: 100%;
-    gap: 20px;
 }
 
 button {
@@ -32,7 +31,9 @@ button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex: 3;
+    flex: 1 1 60%;
+    min-width: 30%;
+    max-width: 80%;
 }
 
 .gallery-container {
@@ -82,11 +83,13 @@ button {
 
 /* Preview section */
 .preview-section {
-    flex: 2;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex: 1 1 40%;
+    min-width: 20%;
+    max-width: 70%;
 }
 
 .preview-container {
@@ -129,7 +132,6 @@ button {
 .preview-navigation {
     display: flex;
     align-items: center;
-    gap: 30px;
     margin-top: 15px;
 }
 
@@ -264,4 +266,34 @@ form button {
 
 form button:hover {
     background: #0056b3;
+}
+
+/* Resizer */
+.resizer {
+    width: 10px;
+    background-color: #e0e0e0;
+    cursor: col-resize;
+    transition: background-color 0.2s;
+    position: relative;
+    min-height: 100%;
+}
+
+.resizer:hover {
+    background-color: #c0c0c0;
+}
+
+.resizer::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 40px;
+    background-color: #999;
+    border-radius: 1px;
+}
+
+.resizer:hover::before {
+    background-color: #666;
 }

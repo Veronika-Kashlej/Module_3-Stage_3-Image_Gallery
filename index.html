@@ -12,7 +12,7 @@
 </head>
 <body>
     <form>
-        <input type="text" placeholder="Enter Image name" required>
+        <input type="text" placeholder="Enter Image name" maxlength="20" required>
         <input type="file" accept="image/*" required>
         <button type="submit">Add to Gallery</button>
     </form>
@@ -23,7 +23,7 @@
             <p class="loading" id="loading-indicator">Loading...</p>
             <button type="button" class="scroll-to-top-btn">↑</button>
         </section>
-        <div></div>
+        <div class="resizer"></div>
         <section class="preview-section">
             <div class="preview-container">
                 <p>Choose image...</p>
