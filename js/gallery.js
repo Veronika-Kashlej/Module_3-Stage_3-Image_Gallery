@@ -5,9 +5,16 @@ export class Gallery {
     this.galleryContainer = document.querySelector(".gallery-container");
     this.loadingIndicator = document.getElementById("loading-indicator");
     this.scrollToTopBtn = document.querySelector(".scroll-to-top-btn");
+    this.addImageForm = document.querySelector("form");
+    this.imageNameInput = document.querySelector("input[type='text']");
+    this.imageFileInput = document.querySelector("input[type='file']");
 
     // Bind event handlers
     this.scrollToTopBtn.addEventListener("click", this.scrollToTop);
+    this.addImageForm.addEventListener(
+      "submit",
+      this.handleFormSubmit.bind(this)
+    );
     this.handleScroll = this.handleScroll.bind(this);
     this.closePreview = this.closePreview.bind(this);
     this.navigateImage = this.navigateImage.bind(this);
@@ -32,6 +39,40 @@ export class Gallery {
     window.addEventListener("scroll", this.handleScroll);
     this.createCoordinatesDisplay();
     this.setupDropZone();
+  }
+
+  handleFormSubmit(e) {
+    e.preventDefault();
+
+    const name = this.imageNameInput.value.trim();
+    const file = this.imageFileInput.files[0];
+
+    // Generate unique ID (find max ID and add 1)
+    const maxId = images.reduce((max, img) => Math.max(max, img.id), 0);
+    const newId = maxId + 1;
+
+    // Create a new image object
+    const newImage = {
+      id: newId,
+      title: name,
+      url: URL.createObjectURL(file),
+    };
+
+    // Add to the beginning of the images array
+    images.unshift(newImage);
+
+    // Create and prepend the new image card
+    const imageCard = this.createImageCard(newImage);
+    this.galleryContainer.prepend(imageCard);
+
+    // If preview is currently open, update the current index
+    if (this.currentImageIndex !== -1) {
+      this.currentImageIndex++;
+    }
+
+    this.updateNavigationButtons();
+
+    this.addImageForm.reset();
   }
 
   createCoordinatesDisplay() {
@@ -70,26 +111,17 @@ export class Gallery {
     document.addEventListener("dragover", this.trackMousePosition.bind(this));
   }
 
-  /**
-   * Tracks mouse position during drag
-   */
   trackMousePosition(e) {
     if (this.isDragging) {
       this.updateCoordinatesDisplay(e.clientX, e.clientY);
     }
   }
 
-  /**
-   * Handles drag over event on drop zone
-   */
   handleDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
   }
 
-  /**
-   * Handles drop event
-   */
   handleDrop(e) {
     e.preventDefault();
 
@@ -105,9 +137,6 @@ export class Gallery {
     this.cleanupDrag();
   }
 
-  /**
-   * Handles drag end event
-   */
   handleDragEnd(e) {
     const previewSection = document.querySelector(".preview-section");
     previewSection.classList.remove("drop-zone");
@@ -115,9 +144,6 @@ export class Gallery {
     this.cleanupDrag();
   }
 
-  /**
-   * Cleans up after drag operation
-   */
   cleanupDrag() {
     this.isDragging = false;
     this.hideCoordinatesDisplay();
@@ -151,23 +177,18 @@ export class Gallery {
     observer.observe(this.loadingIndicator);
   }
 
-  /**
-   * Checks if all images have been loaded
-   */
   hasLoadedAllImages() {
     return this.currentChunk * this.itemsPerChunk >= images.length;
   }
 
-  /**
-   * Loads and renders next batch of images
-   */
   loadImages() {
     const startIndex = this.currentChunk * this.itemsPerChunk;
     const endIndex = startIndex + this.itemsPerChunk;
     const imagesToLoad = images.slice(startIndex, endIndex);
 
     imagesToLoad.forEach((image) => {
-      this.createImageCard(image);
+      const imageCard = this.createImageCard(image);
+      this.galleryContainer.append(imageCard);
     });
 
     this.currentChunk++;
@@ -178,9 +199,6 @@ export class Gallery {
     }
   }
 
-  /**
-   * Handles scroll events to show/hide scroll-to-top button
-   */
   handleScroll() {
     const scrollPosition = window.pageYOffset;
     const screenHeight = window.innerHeight;
@@ -200,9 +218,6 @@ export class Gallery {
     this.scrollToTopBtn.classList.remove("visible");
   }
 
-  /**
-   * Creates and appends image card to gallery
-   */
   createImageCard(image) {
     const imageCard = document.createElement("div");
     imageCard.className = "image-card";
@@ -223,12 +238,9 @@ export class Gallery {
     );
     imageCard.addEventListener("dragend", this.handleDragEnd);
 
-    this.galleryContainer.append(imageCard);
+    return imageCard;
   }
 
-  /**
-   * Sets active card and removes active state from previous card
-   */
   setActiveCard(imageCard) {
     // Remove active class from all cards
     document.querySelectorAll(".image-card.active").forEach((card) => {
@@ -239,17 +251,11 @@ export class Gallery {
     this.activeCard = imageCard;
   }
 
-  /**
-   * Displays image preview with navigation
-   */
   showPreview(image) {
     this.currentImageIndex = images.findIndex((img) => img.id === image.id);
     this.renderPreview(image);
   }
 
-  /**
-   * Renders preview container with image and navigation
-   */
   renderPreview(image) {
     const previewContainer = document.querySelector(".preview-container");
 
@@ -291,9 +297,6 @@ export class Gallery {
     document.removeEventListener("keydown", this.handleKeyPress);
   }
 
-  /**
-   * Navigates to previous or next image in preview
-   */
   navigateImage(direction) {
     if (direction === "prev" && this.currentImageIndex > 0) {
       this.currentImageIndex--;
@@ -309,11 +312,9 @@ export class Gallery {
     const nextImage = images[this.currentImageIndex];
     this.updatePreview(nextImage);
     this.updateActiveCard(nextImage.id);
+    this.updateNavigationButtons();
   }
 
-  /**
-   * Updates preview with new image data
-   */
   updatePreview(image) {
     const previewContainer = document.querySelector(".preview-container");
     const imgElement = previewContainer.querySelector("img");
@@ -322,13 +323,8 @@ export class Gallery {
     imgElement.src = image.url;
     imgElement.alt = image.title;
     titleElement.textContent = image.title;
-
-    this.updateNavigationButtons();
   }
 
-  /**
-   * Updates active card based on image ID
-   */
   updateActiveCard(imageId) {
     document.querySelectorAll(".image-card.active").forEach((card) => {
       card.classList.remove("active");
@@ -341,9 +337,6 @@ export class Gallery {
     }
   }
 
-  /**
-   * Enables/disables navigation buttons based on current position
-   */
   updateNavigationButtons() {
     const previousArrow = document.querySelector(".previous-arrow");
     const nextArrow = document.querySelector(".next-arrow");
