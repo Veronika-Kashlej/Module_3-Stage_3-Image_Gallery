@@ -34,6 +34,9 @@ button {
     flex: 1 1 60%;
     min-width: 30%;
     max-width: 80%;
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
 }
 
 .gallery-container {
@@ -93,7 +96,6 @@ button {
 }
 
 .preview-container {
-    position: fixed;
     display: flex;
     flex-direction: column;
     align-items: center;

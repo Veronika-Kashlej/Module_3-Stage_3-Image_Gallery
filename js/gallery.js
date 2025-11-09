@@ -13,7 +13,7 @@ export class Gallery {
     this.resizer = document.querySelector(".resizer");
 
     // Bind event handlers
-    this.scrollToTopBtn.addEventListener("click", this.scrollToTop);
+    this.scrollToTopBtn.addEventListener("click", this.scrollToTop.bind(this));
     this.addImageForm.addEventListener(
       "submit",
       this.handleFormSubmit.bind(this)
@@ -43,7 +43,7 @@ export class Gallery {
   init() {
     this.setupIntersectionObserver();
     this.loadImages();
-    window.addEventListener("scroll", this.handleScroll);
+    this.gallerySection.addEventListener("scroll", this.handleScroll);
     this.createCoordinatesDisplay();
     this.setupDropZone();
     this.resizer.addEventListener("mousedown", this.handleResizerMouseDown);
@@ -250,11 +250,12 @@ export class Gallery {
   }
 
   handleScroll() {
-    const scrollPosition = window.pageYOffset;
-    const screenHeight = window.innerHeight;
-
+    const scrollPosition = this.gallerySection.scrollTop;
+    const containerHeight = this.gallerySection.clientHeight;
+    const scrollHeight = this.gallerySection.scrollHeight;
     const shouldShowButton =
-      this.hasLoadedAllImages() && scrollPosition > screenHeight;
+      this.hasLoadedAllImages() &&
+      scrollPosition + containerHeight >= scrollHeight;
 
     if (shouldShowButton) {
       this.scrollToTopBtn.classList.add("visible");
@@ -264,7 +265,7 @@ export class Gallery {
   }
 
   scrollToTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    this.gallerySection.scrollTo({ top: 0, behavior: "smooth" });
     this.scrollToTopBtn.classList.remove("visible");
   }
 
